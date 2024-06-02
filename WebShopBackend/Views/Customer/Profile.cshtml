@@ -1,0 +1,321 @@
+﻿@model WebShopBackend.ViewModels.RegisterViewModel
+@{
+    ViewBag.Title = "Profile";
+}
+<h2>Profile of customer</h2>
+
+<div class="d-flex justify-content-center align-items-center" style="margin-top: 30px">
+    <div class="card" style="width: 300px; margin: auto">
+        <div class="card-body">
+            <h2 class="card-title text-center">Profile</h2>
+            @using (Html.BeginForm("UpdateProfile", "Auth", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true)
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                <div class="form-group" style="display: flex; flex-direction:column;">
+                    @Html.LabelFor(m => m.Username, htmlAttributes: new { @class = "control-label" })
+                    <div class="input-group">
+                        <div class="input-group-append">
+                            @Html.EditorFor(model => model.Username, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly", id = "usernameInput" } })
+                            @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; flex-direction:column;">
+                    @Html.LabelFor(m => m.Password, htmlAttributes: new { @class = "control-label" })
+                    <div class="input-group date">
+                        <div class="input-group-append">
+                            @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control", id = "passwordInput" } })
+                            @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; flex-direction:column;">
+                    @Html.LabelFor(m => m.Name, htmlAttributes: new { @class = "control-label" })
+                    <div class="input-group date">
+                        <div class="input-group-append">
+                            @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", id = "nameInput" } })
+                            @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; flex-direction:column;">
+                    @Html.LabelFor(m => m.Surname, htmlAttributes: new { @class = "control-label" })
+                    <div class="input-group date">
+                        <div class="input-group-append">
+                            @Html.EditorFor(model => model.Surname, new { htmlAttributes = new { @class = "form-control", id = "surnameInput" } })
+                            @Html.ValidationMessageFor(model => model.Surname, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; flex-direction:column;">
+                    @Html.LabelFor(m => m.Email, htmlAttributes: new { @class = "control-label" })
+                    <div class="input-group date">
+                        <div class="input-group-append">
+                            @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control", id = "emailInput" } })
+                            @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-block">Submit</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div style="width:70%">
+    <h3>Favorite products</h3>
+    <div id="products-container">
+
+    </div>
+</div>
+
+<br />
+
+<br />
+<div style="width:70%">
+    <h3>Orders</h3>
+    <div id="orders-container">
+
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+            getLoggedUser();
+            getFavoriteProducts();
+            getOrders();
+
+            function getLoggedUser() {
+                $.get("/Auth/GetLoggedUser", function (data) {
+                    var usernameInput = document.getElementById("usernameInput");
+                    usernameInput.value = data.Username;
+                    var passwordInput = document.getElementById("passwordInput");
+                    passwordInput.value = data.Password;
+                    var nameInput = document.getElementById("nameInput");
+                    nameInput.value = data.Name;
+                    var surnameInput = document.getElementById("surnameInput");
+                    surnameInput.value = data.Surname;
+                    var emailInput = document.getElementById("emailInput");
+                    emailInput.value = data.Email;
+                });
+            }
+
+            function getFavoriteProducts() {
+                $.get("/Product/GetFavouriteProducts", function (data) {
+                    displayProducts(data, -1);
+                })
+            }
+
+            function getOrders() {
+                $.get("/Order/GetOrdersForCustomer", function (data) {
+                    console.log(data)
+                    displayOrders(data)
+                })
+            }
+
+            function displayOrders(orders) {
+                var ordersContainer = $("#orders-container");
+                ordersContainer.html("");
+                orders.forEach(function (order) {
+
+                    $.get("/Product/GetProductById?productId=" + order.Product, function (data) {
+                        var product = data
+                        if (order.Status == 0)
+                            order.Status = "ACTIVE"
+                        else if (order.Status == 1)
+                            order.Status = "DONE"
+                        else if (order.Status == 2)
+                            order.Status = "CANCELED"
+                        var rawTimestamp = order.Date.match(/\d+/)[0];
+                        var uploadDate = new Date(parseInt(rawTimestamp))
+
+                        var formattedUploadDate = uploadDate.toISOString().substr(0, 10);
+                        console.log(order.Status)
+                        var productHtml = `
+                                        <div class="col-lg-4 col-md-12 col-sm-6">
+                                          <div class="card card-panel">
+                                            <div class="card-image">
+                                              <img src="data:image/jpeg;base64,${product.Image}" style="height: 200px;">
+                                              <span class="card-title teal lighten-2" style="padding: 6px;">${product.Name}</span>
+                                            </div>
+                                            <div class="card-content">
+                                                <p class="product-info">Amount: ${order.Amount}</p>
+                                                <p class="product-info">Description: ${product.Description}</p>
+                                                <p class="product-info"; >Price: $${product.Price * order.Amount}</p>
+                                                <p class="product-info"; >Date: ${formattedUploadDate}</p>
+                                                <p class="product-info"; >Status: ${order.Status}</p>
+                                                <button class="btn-floating btn-medium yellow darken-2" style="position: absolute; bottom: 10px; right: 10px;" onclick="mark_done('${order.Id}')"><i class="material-icons">done_all</i></button>
+                                                <button class="btn-floating btn-medium yellow darken-2" style="position: absolute; bottom: 55px; right: 10px; visibility: ${order.Status == 'DONE' ? 'visible' : 'hidden'}" onclick="open_comment_section('${order.Id}', '${product.Id}')"> <i class="material-icons">insert_comment</i></button>
+                                                <!-- The Modal -->
+
+                                                <div id="reviewModal_${order.Id}" class="modal modal-fixed-footer">
+                                                    <div class="modal-content">
+                                                        <span class="close" onclick="close_comment_section('${order.Id}')">&times;</span>
+                                                        <h4>Leave a review</h4>
+                                                        <textarea id="reviewInputTitle_${order.Id}" placeholder="Write your titlew here..." style="max-width: 100%"></textarea>
+                                                        </br>
+                                                        <textarea id="reviewInput_${order.Id}" placeholder="Write your review here..." style="max-width: 100%"></textarea>
+                                                        <h5>Comments</h5>
+                                                        <div id="comments_${order.Id}">
+
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button onclick="post_comment('${order.Id}')"class="modal-close waves-effect waves-green btn-flat">Post</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    `
+
+                        ordersContainer.append(productHtml);
+                    })
+
+
+                });
+            }
+
+
+
+            function displayProducts(products, sorter) {
+                var productsContainer = $("#products-container");
+
+                if (sorter != -1)
+                    products.sort(sorter);
+
+                productsContainer.html("");
+
+                products.forEach(function (product) {
+                    var rawTimestamp = product.UploadDate.match(/\d+/)[0];
+                    var uploadDate = new Date(parseInt(rawTimestamp));
+                    var formattedUploadDate = uploadDate.toISOString().substr(0, 10);
+
+                    var productHtml = `
+                                        <div class="col-lg-4 col-md-12 col-sm-6">
+                                          <div class="card card-panel">
+                                            <div class="card-image">
+                                              <img src="data:image/jpeg;base64,${product.Image}" style="height: 200px;">
+                                              <span class="card-title teal lighten-2" style="padding: 6px;">${product.Name}</span>
+                                            </div>
+                                            <div class="card-content">
+                                               <p class="product-info">Amount: ${product.Amount > 0 ? product.Amount : "Unavailable"}</p>
+                                               <p class="product-info">Description: ${product.Description}</p>
+                                               <p class="product-info">Price: $${product.Price}</p>
+                                               <button class="btn-floating btn-medium yellow darken-2" style="position: absolute; bottom: 10px; right: 10px;" onclick="add_to_cart('${product.Id}')"><i class="material-icons">add_shopping_cart</i></button>
+                                               <button class="btn-floating btn-medium yellow darken-2" style="position: absolute; bottom: 55px; right: 10px;" onclick="add_to_favorite('${product.Id}')"><i class="material-icons">playlist_add</i></button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                    `
+
+                    productsContainer.append(productHtml);
+                });
+            }
+        })
+
+        function open_comment_section(orderId, productId) {
+            var modal = document.getElementById("reviewModal_" + orderId)
+            modal.style.display = 'block';
+            $.get("/Order/GetReviewsForProduct?productId=" + productId, function (data) {
+                var commentsContainer = $("#comments_" + orderId);
+                commentsContainer.html("");
+                console.log(data)
+                data.forEach(function (comment) {
+
+                    var commentsHtml = `
+                                        <div>
+                                            <span class="close" onclick="delete_review('${comment.Id}')">&times;</span>
+                                            <p><b>${comment.Title}</b></p>
+                                            <p>${comment.Description}</p>
+                                            </br>
+                                        </div>
+                                    `
+
+                    commentsContainer.append(commentsHtml);
+                });
+            })
+        }
+
+        function delete_review(reviewId) {
+            console.log(reviewId)
+            $.ajax({
+                type: "POST",
+                url: "/Order/DeleteReview?reviewId=" + reviewId,
+                success: (response) => {
+                    alert("Succesfully removed comment!")
+                    location.reload()
+                }
+            })
+        }
+
+        function close_comment_section(orderId) {
+            var modal = document.getElementById("reviewModal_" + orderId)
+            modal.style.display = 'none';
+        }
+        function post_comment(orderId) {
+
+            console.log(orderId)
+            var textareaText = document.getElementById("reviewInput_" + orderId)
+            var textareaTitle = document.getElementById("reviewInputTitle_" + orderId)
+            close_comment_section(orderId)
+            $.ajax({
+                type: "POST",
+                url: "/Order/PostReview?orderId=" + orderId + "&title=" + textareaTitle.value + "&comment=" + textareaText.value,
+                success: (response) => {
+                    alert("Succesfully poseted comment!")
+                }
+            })
+        }
+
+        function add_to_cart(productId) {
+            $.ajax({
+                type: "POST",
+                url: "/Customer/AddToShoppingCart?productId=" + productId,
+                success: (response) => {
+                    alert("Succesfully added to shopping cart!")
+                }
+            })
+        }
+
+        function add_to_favorite(productId) {
+            $.ajax({
+                type: "POST",
+                url: "/Customer/AddToFavorite?productId=" + productId,
+                success: (response) => {
+                    var message = response ? "added" : "removed";
+                    alert("Succesfully " + message + " item!");
+                    location.reload();
+                }
+            })
+        }
+
+        function mark_done(orderId) {
+            $.ajax({
+                type: "POST",
+                url: "/Order/SetOrderStatusToDone?orderId=" + orderId,
+
+                success: (response) => {
+                    location.reload();
+                }
+            })
+        }
+
+
+
+
+
+    </script>
+}

@@ -1,0 +1,2 @@
+Admin;admin;Admin;Admin;MALE;admin@gmail.com;2023-07-31;ADMIN;False;;;
+Seller;seller;Seller;Seller;MALE;seller@gmail.com;2023-09-14;SELLER;False;;;

@@ -1,0 +1,100 @@
+﻿
+@{
+    ViewBag.Title = "Cart";
+}
+
+<h3>Shopping cart</h3>
+<br />
+<div style="width:70%">
+    <div id="products-container">
+
+    </div>
+</div>
+<br />
+
+@section Scripts
+{
+    <script>
+
+        $(document).ready(function () {
+            getProductsFromCart();
+
+            function getProductsFromCart() {
+                $.get("/Product/GetProductsFromCart", function (data) {
+                    displayProducts(data, -1);
+                    for (var i = 0; i < data.length; i++)
+                        items.push(data[i].Id)
+                })
+            }
+
+            function displayProducts(products, sorter) {
+                var productsContainer = $("#products-container");
+
+                if (sorter != -1)
+                    products.sort(sorter);
+
+                productsContainer.html("");
+
+                products.forEach(function (product) {
+                    var rawTimestamp = product.UploadDate.match(/\d+/)[0];
+                    var uploadDate = new Date(parseInt(rawTimestamp));
+                    var formattedUploadDate = uploadDate.toISOString().substr(0, 10);
+
+                    var productHtml = `
+                            <div class="col-lg-4 col-md-12 col-sm-6">
+                              <div class="card card-panel">
+                                <button class="btn-floating btn-medium yellow darken-2" onclick="remove_from_cart('${product.Id}')"><i class="material-icons">close</i></button>
+                                <div class="card-image">
+                                  <img src="data:image/jpeg;base64,${product.Image}" style="height: 200px;">
+                                  <span class="card-title">${product.Name}</span>
+                                </div>
+                                <div class="card-content">
+                                    <p class="product-info">Description: ${product.Description}</p>
+                                    <p class="product-info"; >Price: $${product.Price}</p>
+                                    <div class="input-field">
+                                        <input type="number" value="1" id="wantedAmount_${product.Id}" class="validate">
+                                        <label for="wantedAmount_${product.Id}">Wanted Amount</label>
+                                    </div>
+                                   <button class="btn-floating btn-medium yellow darken-2" style="position: absolute; bottom: 10px; right: 10px;" onclick="add_to_cart('${product.Id}')"><i class="material-icons">add_shopping_cart</i></button>
+                                </div>
+                              </div>
+                            </div>
+                        `
+
+                    productsContainer.append(productHtml);
+                });
+            }
+        })
+
+        function add_to_cart(productId) {
+            var number = document.getElementById("wantedAmount_" + productId)
+            $.ajax({
+                type: "POST",
+                url: "/Order/MakeOrder?productId=" + productId + "&amount=" + number.value,
+                success: (response) => {
+                    alert("Purchased successfully!")
+                },
+                error: (response) => {
+                    alert("Out of stock!")
+                }
+            })
+        }
+
+
+        function remove_from_cart(productId) {
+            items.pop(productId);
+            $.ajax({
+                type: "POST",
+                url: "/Customer/RemoveFromShoppingCart?productId=" + productId,
+                success: (response) => {
+                    location.reload();
+                }
+            })
+        }
+
+        var items = []
+
+        
+
+    </script>
+}

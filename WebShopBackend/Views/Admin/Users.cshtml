@@ -1,0 +1,317 @@
+﻿@model WebShopBackend.ViewModels.SellerViewModel
+@{
+    ViewBag.Title = "Users";
+}
+<h2>Users</h2>
+<div style="display:flex">
+    <div style="width:30%">
+        <div class="input-field row">
+            <input id="search_by_name" type="text" class="validate">
+            <label for="search_by_name">Search by name:</label>
+        </div>
+        <div class="input-field row">
+            <input id="search_by_surname" type="text" class="validate">
+            <label for="search_by_surname">Search by surname:</label>
+        </div>
+        <div class="input-field row">
+            <input id="search_by_role" type="text" class="validate">
+            <label for="search_by_role">Search by role:</label>
+        </div>
+        <div class="input-field row">
+            <p>Date from:</p>
+            <label for="date_from"></label>
+            <input type="date" id="date_from" name="date_from">
+        </div>
+        <div class="input-field row">
+            <p>Date to:</p>
+            <label for="date_to"></label>
+            <input type="date" id="date_to" name="date_to">
+        </div>
+        <div class="input-field row s12">
+            <select id="sort_by">
+                <option value="" disabled selected>Choose your option</option>
+                <option value="a-to-z-by-name">Name: A to Z</option>
+                <option value="z-to-a-by-name">Name: Z to A</option>
+                <option value="a-to-z-by-surname">Surname: A to Z</option>
+                <option value="z-to-a-by-surname">Surname: Z to A</option>
+                <option value="old-to-new">Birthdate: Older to younger</option>
+                <option value="new-to-old">Birthdate: Younger to Older</option>
+                <option value="role-down">Role: A to Z</option>
+                <option value="role-up">Role: Z to A</option>
+            </select>
+        </div>
+
+        <div class="input-field row">
+            <button class="waves-effect waves-light btn-large" onclick="open_modal()">Create seller</button>
+        </div>
+    </div>
+    <div style="width:70%">
+        <div id="user-container">
+
+        </div>
+    </div>
+    
+    <div id="creationSeller" class="modal modal-fixed-footer"> 
+        <div class="modal-content" style="height: 100%">
+            <span class="close" onclick="close_comment_section()">&times;</span>
+            <h4>Create or change seller</h4>
+            @using (Html.BeginForm("Create", "Admin", FormMethod.Post, new { @class = "form-horizontal", role = "form", enctype = "multipart/form-data" }))
+            {
+
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Username, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        <div class="input-group-append">
+                            @Html.EditorFor(model => model.Username, new { htmlAttributes = new { @class = "form-control", id = "usernameInput", @readonly = "readonly" } })
+                            @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Password, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        <div class="input-group-append">
+                            @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control", id = "passwordInput" } })
+                            @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        <div class="input-group-append">
+                            @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", id = "nameInput" } })
+                            @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Surname, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        <div class="input-group-append">
+                            @Html.EditorFor(model => model.Surname, new { htmlAttributes = new { @class = "form-control", id = "surnameInput" } })
+                            @Html.ValidationMessageFor(model => model.Surname, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Email, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        <div class="input-group-append">
+                            @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control", id = "emailInput" } })
+                            @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Birthdate, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        <div class="input-group-append">
+                            @Html.EditorFor(model => model.Birthdate, new { htmlAttributes = new { @class = "form-control", id = "birthdateInput" } })
+                            @Html.ValidationMessageFor(model => model.Birthdate, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Create" class="btn btn-primary" />
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+
+        function open_modal() {
+            var modal = document.getElementById("creationSeller")
+            modal.style.display = 'block';
+        }
+
+        function close_comment_section() {
+            var modal = document.getElementById("creationSeller")
+            modal.style.display = 'none';
+        }
+
+        function update_seller(username, password, name, surname, email, birthdate) { 
+            open_modal()
+            console.log(username, password, name, surname, email, birthdate)
+            var passwordInput = document.getElementById("passwordInput");
+            passwordInput.value = password;
+            var nameInput = document.getElementById("nameInput");
+            nameInput.value = name;
+            var surnameInput = document.getElementById("surnameInput");
+            surnameInput.value = surname;
+            var emailInput = document.getElementById("emailInput");
+            emailInput.value = email;
+            var birthdateInput = document.getElementById("birthdateInput");
+            birthdateInput.value = birthdate;
+            var usernameInput = document.getElementById("usernameInput");
+            usernameInput.value = username;
+        }
+
+        $(document).ready(function () {
+            var users = null;
+            loadUsers();
+
+            function loadUsers() {
+                $.get("/Admin/GetAllUsers", function (data) {
+                    displayUsers(data, -1);
+                    users = data;
+                });
+            }
+
+            function displayUsers(users, sorter) {
+                var userContainer = $("#user-container");
+
+                if (sorter != -1)
+                    users.sort(sorter);
+
+                userContainer.html("");
+
+                users.forEach(function (user) {
+                    var birthDate = parseJsonDate(user.Birthdate);
+                    var roleName = getRoleName(user.Role);
+
+                    var userHtml = `
+                                    <div class="col-lg-4 col-md-12 col-sm-6">
+                                      <div class="card card-panel">
+                                        <div class="card-content">
+                                           <p class="product-info">Name: ${user.Name}</p>
+                                           <p class="product-info"; >Surname: ${user.Surname}</p>
+                                           <p class="product-info">Email: ${user.Email}</p>
+                                           <p class="product-info"; >Birthdate: ${birthDate}</p>
+                                           <p class="product-info"; >Role: ${roleName}</p>
+                                           <button class="btn-floating btn-medium yellow darken-2" style="position: absolute; bottom: 55px; right: 10px;" onclick="update_seller('${user.Username}', '${user.Password}', '${user.Name}', '${user.Surname}', '${user.Email}', '${birthDate}')"><i class="material-icons">create</i></button>
+                                           <button class="btn-floating btn-medium yellow darken-2" style="position: absolute; bottom: 10px; right: 10px;" onclick="delete_user('${user.Username}')"><i class="material-icons">cancel</i></button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                `
+
+                    userContainer.append(userHtml);
+                });
+            }
+
+
+
+            var select = document.getElementById("sort_by");
+            select.addEventListener('change', (e) => {
+                switch (select.value) {
+                    case "a-to-z-by-name":
+                        displayUsers(users, (a, b) => a.Name > b.Name ? 1 : -1);
+                        break;
+                    case "z-to-a-by-name":
+                        displayUsers(users, (a, b) => b.Name > a.Name ? 1 : -1);
+                        break;
+                    case "a-to-z-by-surname":
+                        displayUsers(users, (a, b) => a.Surname > b.Surname ? 1 : -1);
+                        break;
+                    case "z-to-a-by-surname":
+                        displayUsers(users, (a, b) => b.Surname > a.Surname ? 1 : -1);
+                        break;
+                    case "old-to-new":
+                        displayUsers(users, (a, b) => a.Birthdate > b.Birthdate ? 1 : -1);
+                        break;
+                    case "new-to-old":
+                        displayUsers(users, (a, b) => b.Birthdate > a.Birthdate ? 1 : -1);
+                        break;
+                    case "role-down":
+                        displayUsers(users, (a, b) => getRoleName(a.Role).localeCompare(getRoleName(b.Role)));
+                        break;
+                    case "role-up":
+                        displayUsers(users, (a, b) => getRoleName(b.Role).localeCompare(getRoleName(a.Role)));
+                        break;
+                }
+            })
+
+            var search_by_name = document.getElementById("search_by_name");
+            var search_by_surname = document.getElementById("search_by_surname");
+            var date_from = document.getElementById("date_from");
+            var date_to = document.getElementById("date_to");
+            var search_by_role = document.getElementById("search_by_role");
+            search_by_name.addEventListener('input', (e) => {
+                $.get("/Admin/GetFilteredUsers?name=" + search_by_name.value + "&surname=" + search_by_surname.value + "&dateFrom=" + date_from.value + "&dateTo=" + date_to.value + "&role=" + search_by_role.value, function (data) {
+                    displayUsers(data, -1);
+                    users = data;
+                });
+            })
+            search_by_surname.addEventListener('input', (e) => {
+                $.get("/Admin/GetFilteredUsers?name=" + search_by_name.value + "&surname=" + search_by_surname.value + "&dateFrom=" + date_from.value + "&dateTo=" + date_to.value + "&role=" + search_by_role.value, function (data) {
+                    displayUsers(data, -1);
+                    users = data;
+                });
+            })
+            date_from.addEventListener('input', (e) => {
+                $.get("/Admin/GetFilteredUsers?name=" + search_by_name.value + "&surname=" + search_by_surname.value + "&dateFrom=" + date_from.value + "&dateTo=" + date_to.value + "&role=" + search_by_role.value, function (data) {
+                    displayUsers(data, -1);
+                    users = data;
+                });
+            })
+            date_to.addEventListener('input', (e) => {
+                $.get("/Admin/GetFilteredUsers?name=" + search_by_name.value + "&surname=" + search_by_surname.value + "&dateFrom=" + date_from.value + "&dateTo=" + date_to.value + "&role=" + search_by_role.value, function (data) {
+                    displayUsers(data, -1);
+                    users = data;
+                });
+            })
+            search_by_role.addEventListener('input', (e) => {
+                $.get("/Admin/GetFilteredUsers?name=" + search_by_name.value + "&surname=" + search_by_surname.value + "&dateFrom=" + date_from.value + "&dateTo=" + date_to.value + "&role=" + search_by_role.value, function (data) {
+                    displayUsers(data, -1);
+                    users = data;
+                });
+            })
+
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var selectElems = document.querySelectorAll('select');
+            var instances = M.FormSelect.init(selectElems);
+        });
+
+        function delete_user(username) {
+            $.ajax({
+                type: "POST",
+                url: "/Admin/DeleteUserByUsername?username=" + username,
+
+                success: (response) => {
+                    location.reload();
+                }
+            })
+        }
+
+        function convertDateToJsonDate(dateString) {
+            var date = new Date(dateString);
+            var timestamp = date.getTime();
+            return '/Date(' + timestamp + ')/';
+        }
+
+        function parseJsonDate(jsonDate) {
+            var timestamp = parseInt(jsonDate.match(/\d+/)[0]);
+            var date = new Date(timestamp);
+            return date.toLocaleDateString(); 
+        }
+
+        function getRoleName(roleNumber) {
+            var roleMap = {
+                0: "CUSTOMER",
+                1: "SELLER",
+                2: "ADMIN"
+            };
+
+            return roleMap[roleNumber] || "Unknown"; 
+        }
+
+    </script>
+}

@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @RenderSection("Styles", required: false)
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @Html.ActionLink("Gigatron", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    @*<li>@Html.ActionLink("Home", "Index", "Home")</li>*@
+                    @if (Request.Cookies["AuthToken"] != null && Request.Cookies["AuthToken"]["Role"] == "CUSTOMER")
+                    {
+                        <li><a href="@Url.Action("Cart", "Customer")"><i class="material-icons">shopping_cart</i></a></li>
+                        <li>@Html.ActionLink("Profile", "Profile", "Customer")</li>
+                        <li>@Html.ActionLink("Logout", "Logout", "Auth")</li>
+                    }
+                    else if (Request.Cookies["AuthToken"] != null && Request.Cookies["AuthToken"]["Role"] == "ADMIN")
+                    {
+                        <li>@Html.ActionLink("Users", "Users", "Admin")</li>
+                        <li>@Html.ActionLink("Profile", "Profile", "Admin")</li>
+                        <li>@Html.ActionLink("Logout", "Logout", "Auth")</li>
+                    }
+                    else if (Request.Cookies["AuthToken"] != null && Request.Cookies["AuthToken"]["Role"] == "SELLER")
+                    {
+                        <li>@Html.ActionLink("Profile", "Profile", "Seller")</li>
+                        <li>@Html.ActionLink("Logout", "Logout", "Auth")</li>
+                    }
+                    else
+                    {
+                        <li>@Html.ActionLink("Login", "Login", "Auth")</li>
+                        <li>@Html.ActionLink("Register", "Register", "Auth")</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+        @RenderBody()
+        
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>

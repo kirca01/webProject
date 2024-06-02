@@ -1,0 +1,149 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+
+<h2>Home Page</h2>
+<div style="display:flex">
+    <div style="width:30%">
+        <div class="input-field row">
+            <input id="search_by_name" type="text" class="validate">
+            <label for="search_by_name">Search by name</label>
+        </div>
+        <div class="input-field row">
+            <input id="search_by_town" type="text" class="validate">
+            <label for="search_by_town">Search by town</label>
+        </div>
+        <div class="input-field row">
+            <label for="price1">Minimal price:</label>
+            <input type="number" id="price1" name="price1">
+        </div>
+        <div class="input-field row">
+            <label for="price2">Maximum price:</label>
+            <input type="text" id="price2" name="price2">
+        </div>
+        <div class="input-field row s12">
+            <select id="sort_by">
+                <option value="" disabled selected>Choose your option</option>
+                <option value="low-to-high">Price: Low to High</option>
+                <option value="high-to-low">Price: High to Low</option>
+                <option value="a-to-z">Name: A to Z</option>
+                <option value="z-to-a">Name: Z to A</option>
+                <option value="old-to-new">Release Date: Oldest to Newest</option>
+                <option value="new-to-old">Release Date: Newest to Oldest</option>
+            </select>
+        </div>
+    </div>
+        <div style="width:70%">
+            <div id="products-container">
+
+            </div>
+        </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+            var products = null;
+            loadProducts();
+
+            function loadProducts() {
+                $.get("/Product/GetProducts", function (data) {
+                    displayProducts(data, -1);
+                    products = data;
+                });
+            }
+
+            function displayProducts(products, sorter) {
+                var productsContainer = $("#products-container");
+                
+                if (sorter != -1)
+                    products.sort(sorter);
+
+                productsContainer.html("");
+
+                products.forEach(function (product) {
+
+                    var productHtml = `
+                        <div class="col-lg-4 col-md-12 col-sm-6">
+                          <div class="card card-panel">
+                            <div class="card-image">
+                              <img src="data:image/jpeg;base64,${product.Image}" style="height: 200px;">
+                              <span class="card-title teal lighten-2" style="padding: 6px;">${product.Name}</span>
+                            </div>
+                            <div class="card-content">
+                               <p class="product-info">Amount: ${product.Amount}</p>
+                               <p class="product-info">Description: ${product.Description}</p>
+                               <p class="card-panel teal lighten-2" style="padding: 6px;">Price: $${product.Price}</p>
+                            </div>
+                          </div>
+                        </div>
+                    `
+
+                    productsContainer.append(productHtml);
+                });
+            }
+
+            var select = document.getElementById("sort_by");
+            select.addEventListener('change', (e) => {
+                switch (select.value) {
+                    case "low-to-high":
+                        displayProducts(products, (a, b) => a.Price - b.Price);
+                        break;
+                    case "high-to-low":
+                        displayProducts(products, (a, b) => b.Price - a.Price);
+                        break;
+                    case "a-to-z":
+                        displayProducts(products, (a, b) => a.Name > b.Name ? 1 : -1);
+                        break;
+                    case "z-to-a":
+                        displayProducts(products, (a, b) => b.Name > a.Name ? 1 : -1);
+                        break;
+                    case "old-to-new":
+                        displayProducts(products, (a, b) => a.UploadDate > b.UploadDate ? 1 : -1);
+                        break;
+                    case "new-to-old":
+                        displayProducts(products, (a, b) => b.UploadDate > a.UploadDate ? 1 : -1);
+                        break;
+                }
+            })
+
+            var search_by_name = document.getElementById("search_by_name");
+            var search_by_town = document.getElementById("search_by_town");
+            var price1 = document.getElementById("price1");
+            var price2 = document.getElementById("price2");
+            search_by_name.addEventListener('input', (e) => {
+                $.get("/Product/GetFilteredProducts?name=" + search_by_name.value + "&city=" + search_by_town.value + "&minPrice=" + price1.value + "&maxPrice=" + price2.value, function (data) {
+                    displayProducts(data, -1);
+                    products = data;
+                });
+            })
+            search_by_town.addEventListener('input', (e) => {
+                $.get("/Product/GetFilteredProducts?name=" + search_by_name.value + "&city=" + search_by_town.value + "&minPrice=" + price1.value + "&maxPrice=" + price2.value, function (data) {
+                    displayProducts(data, -1);
+                    products = data;
+                });
+            })
+            price1.addEventListener('input', (e) => {
+                $.get("/Product/GetFilteredProducts?name=" + search_by_name.value + "&city=" + search_by_town.value + "&minPrice=" + price1.value + "&maxPrice=" + price2.value, function (data) {
+                    displayProducts(data, -1);
+                    products = data;
+                });
+            })
+            price2.addEventListener('input', (e) => {
+                $.get("/Product/GetFilteredProducts?name=" + search_by_name.value + "&city=" + search_by_town.value + "&minPrice=" + price1.value + "&maxPrice=" + price2.value, function (data) {
+                    displayProducts(data, -1);
+                    products = data;
+                });
+            })
+
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+            var selectElems = document.querySelectorAll('select');
+            var instances = M.FormSelect.init(selectElems);
+        });
+
+    </script>
+}

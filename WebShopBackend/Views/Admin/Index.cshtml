@@ -1,0 +1,293 @@
+﻿@model WebShopBackend.ViewModels.ProductViewModel
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+<div style="display:flex">
+    <div style="width:30%">
+        <div class="input-field row">
+            <input id="search_by_name" type="text" class="validate">
+            <label for="search_by_name">Search by name</label>
+        </div>
+        <div class="input-field row">
+            <input id="search_by_town" type="text" class="validate">
+            <label for="search_by_town">Search by town</label>
+        </div>
+        <div class="input-field row">
+            <label for="price1">Minimal price:</label>
+            <input type="number" id="price1" name="price1">
+        </div>
+        <div class="input-field row">
+            <label for="price2">Maximum price:</label>
+            <input type="text" id="price2" name="price2">
+        </div>
+        <div class="input-field row s12">
+            <select id="sort_by">
+                <option value="" disabled selected>Choose your option</option>
+                <option value="low-to-high">Price: Low to High</option>
+                <option value="high-to-low">Price: High to Low</option>
+                <option value="a-to-z">Name: A to Z</option>
+                <option value="z-to-a">Name: Z to A</option>
+                <option value="old-to-new">Release Date: Oldest to Newest</option>
+                <option value="new-to-old">Release Date: Newest to Oldest</option>
+                <option value="unavailable">Unavailable</option>
+            </select>
+        </div>
+
+        <div class="input-field row">
+            <button class="waves-effect waves-light btn-large" onclick="open_modal()">Create product</button>
+        </div>
+    </div>
+    <div style="width:70%">
+        <div id="products-container">
+
+        </div>
+    </div>
+    <!-- Product Creation Modal -->
+    <div id="creationModal" class="modal modal-fixed-footer">
+        <div class="modal-content">
+            <span class="close" onclick="close_comment_section()">&times;</span>
+            <h4>Create product</h4>
+            @using (Html.BeginForm("Create", "Product", FormMethod.Post, new { @class = "form-horizontal", role = "form", enctype = "multipart/form-data" }))
+            {
+
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Id, new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Id, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly", id = "idInput" } })
+                        @Html.ValidationMessageFor(model => model.Id, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Name, new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", id = "nameInput" } })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Price, new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Price, new { htmlAttributes = new { @class = "form-control", id = "priceInput" } })
+                        @Html.ValidationMessageFor(model => model.Price, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Amount, new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Amount, new { htmlAttributes = new { @class = "form-control", id = "amountInput" } })
+                        @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Description, new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control", id = "descriptionInput" } })
+                        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ImageFile, new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        <input type="file" id="imageInput" name="ImageFile" />
+                        @Html.ValidationMessageFor(model => model.ImageFile, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.City, new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.City, new { htmlAttributes = new { @class = "form-control", id = "cityInput" } })
+                        @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Create" class="btn btn-primary" />
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="modal-footer">
+            <button onclick="send_update()" class="modal-close waves-effect waves-green btn-flat">Update</button>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts
+{
+    <script>
+
+        function open_modal() {
+            var modal = document.getElementById("creationModal")
+            modal.style.display = 'block';
+
+        }
+
+        function close_comment_section() {
+            var modal = document.getElementById("creationModal")
+            modal.style.display = 'none';
+        }
+
+        function update_product(id, name, price, amount, description, city) {
+            open_modal()
+            console.log(id, name, price, amount, description, city)
+            var nameInput = document.getElementById("nameInput");
+            nameInput.value = name;
+            var priceInput = document.getElementById("priceInput");
+            priceInput.value = price;
+            var amountInput = document.getElementById("amountInput");
+            amountInput.value = amount;
+            var descriptionInput = document.getElementById("descriptionInput");
+            descriptionInput.value = description;
+            var cityInput = document.getElementById("cityInput");
+            cityInput.value = city;
+            var idInput = document.getElementById("idInput");
+            idInput.value = id;
+        }
+
+
+
+        $(document).ready(function () {
+            var products = null;
+            loadProducts();
+
+
+
+            function loadProducts() {
+                $.get("/Product/GetProductsBySeller", function (data) {
+                    displayProducts(data, -1);
+                    products = data;
+                });
+            }
+
+            function displayProducts(products, sorter) {
+                var productsContainer = $("#products-container");
+
+                if (sorter != -1)
+                    products.sort(sorter);
+
+                productsContainer.html("");
+
+                products.forEach(function (product) {
+                    var rawTimestamp = product.UploadDate.match(/\d+/)[0];
+                    var uploadDate = new Date(parseInt(rawTimestamp));
+                    var formattedUploadDate = uploadDate.toISOString().substr(0, 10);
+
+                    var productHtml = `
+                                    <div class="col-lg-4 col-md-12 col-sm-6">
+                                      <div class="card card-panel">
+                                        <div class="card-image">
+                                          <img src="data:image/jpeg;base64,${product.Image}" style="height: 200px;">
+                                          <span class="card-title teal lighten-2" style="padding: 6px;">${product.Name}</span>
+                                        </div>
+                                        <div class="card-content">
+                                           <p class="product-info">Amount: ${product.Amount > 0 ? product.Amount : "Unavailable"}</p>
+                                           <p class="product-info">Description: ${product.Description}</p>
+                                           <p class="product-info"; >Price: $${product.Price}</p>
+                                           <button class="btn-floating btn-medium yellow darken-2" style="position: absolute; bottom: 55px; right: 10px;" onclick="update_product('${product.Id}', '${product.Name}', ${product.Price}, ${product.Amount}, '${product.Description}', '${product.City}')"><i class="material-icons">create</i></button>
+                                           <button class="btn-floating btn-medium yellow darken-2" style="position: absolute; bottom: 10px; right: 10px;" onclick="delete_product('${product.Id}')"><i class="material-icons">cancel</i></button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                `
+
+                    productsContainer.append(productHtml);
+                });
+            }
+
+
+
+            var select = document.getElementById("sort_by");
+            select.addEventListener('change', (e) => {
+                switch (select.value) {
+                    case "low-to-high":
+                        displayProducts(products, (a, b) => a.Price - b.Price);
+                        break;
+                    case "high-to-low":
+                        displayProducts(products, (a, b) => b.Price - a.Price);
+                        break;
+                    case "a-to-z":
+                        displayProducts(products, (a, b) => a.Name > b.Name ? 1 : -1);
+                        break;
+                    case "z-to-a":
+                        displayProducts(products, (a, b) => b.Name > a.Name ? 1 : -1);
+                        break;
+                    case "old-to-new":
+                        displayProducts(products, (a, b) => a.UploadDate > b.UploadDate ? 1 : -1);
+                        break;
+                    case "new-to-old":
+                        displayProducts(products, (a, b) => b.UploadDate > a.UploadDate ? 1 : -1);
+                        break;
+                    case "unavailable":
+                        var filtered = []
+                        for (var i = 0; i < products.length; i++)
+                            if (products[i].Amount == 0)
+                                filtered.push(products[i])
+                        displayProducts(filtered, -1);
+                        break;
+                }
+            })
+
+            var search_by_name = document.getElementById("search_by_name");
+            var search_by_town = document.getElementById("search_by_town");
+            var price1 = document.getElementById("price1");
+            var price2 = document.getElementById("price2");
+            search_by_name.addEventListener('input', (e) => {
+                $.get("/Product/GetFilteredProducts?name=" + search_by_name.value + "&city=" + search_by_town.value + "&minPrice=" + price1.value + "&maxPrice=" + price2.value, function (data) {
+                    displayProducts(data, -1);
+                    products = data;
+                });
+            })
+            search_by_town.addEventListener('input', (e) => {
+                $.get("/Product/GetFilteredProducts?name=" + search_by_name.value + "&city=" + search_by_town.value + "&minPrice=" + price1.value + "&maxPrice=" + price2.value, function (data) {
+                    displayProducts(data, -1);
+                    products = data;
+                });
+            })
+            price1.addEventListener('input', (e) => {
+                $.get("/Product/GetFilteredProducts?name=" + search_by_name.value + "&city=" + search_by_town.value + "&minPrice=" + price1.value + "&maxPrice=" + price2.value, function (data) {
+                    displayProducts(data, -1);
+                    products = data;
+                });
+            })
+            price2.addEventListener('input', (e) => {
+                $.get("/Product/GetFilteredProducts?name=" + search_by_name.value + "&city=" + search_by_town.value + "&minPrice=" + price1.value + "&maxPrice=" + price2.value, function (data) {
+                    displayProducts(data, -1);
+                    products = data;
+                });
+            })
+
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var selectElems = document.querySelectorAll('select');
+            var instances = M.FormSelect.init(selectElems);
+        });
+
+        function delete_product(productId) {
+            $.ajax({
+                type: "POST",
+                url: "/Product/DeleteProductById?productId=" + productId,
+
+                success: (response) => {
+                    location.reload();
+                }
+            })
+        }
+
+
+
+    </script>
+}
+
